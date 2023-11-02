@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from model import Todo
 
 # app object
 app = FastAPI()
@@ -37,16 +38,25 @@ async def get_todo_by_id(title):
     response = await fetch_one_todo(title)
     if response:
         return response
-    return HTTPException(404, f"there is no TODO item with this title {title}")
+    raise HTTPException(404, f"there is no TODO item with this title {title}")
 
 @app.post("/api/todo", response_model=Todo)
-async def post_to_do(Todo):
-    return 1
+async def post_to_do(todo:Todo):
+    response = await create_todo(todo.dict())
+    if response:
+        return response
+    raise HTTPException(400, "Something went wrong / Bad Request")
 
-@app.put("/api/todo{id}")
-async def put_to_do(id, data):
-    return 1
+@app.put("/api/todo{title}", response_model=Todo)
+async def put_to_do(title:str, desc:str):
+    response = await update_todo(title, desc)
+    if response:
+        return response
+    raise HTTPException(404, f"there is no TODO item with this title {title}")
 
-@app.delete("/api/todo{id}")
-async def delete_to_do(todo):
-    return 1
+@app.delete("/api/todo{title}")
+async def delete_to_do(title):
+    response = await remove_todo(title)
+    if response:
+        return "Successfully deleted todo item!"
+    raise 1
